@@ -81,5 +81,7 @@ protected:
 
 	void ExecuteLogin(FCommand_Packet _command_packet);
 
+	void GetRequest(FCommand_Packet _packet);
+
 };
 

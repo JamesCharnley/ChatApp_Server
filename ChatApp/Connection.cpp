@@ -60,6 +60,8 @@ void Connection::MessageReceived(int _sender, std::string _message)
         break;
     case ECommand::Get:
         break;
+    case ECommand::GetRoom:
+        GetRequest(command_packet);
     default:
         break;
     }
@@ -275,5 +277,25 @@ void Connection::ExecuteLogin(FCommand_Packet _command_packet)
         int com_int = (int)ECommand::Authorized;
         std::string com_str = std::to_string(com_int) + ";" + login_packet.Username;
         PushMessage(com_str);
+    }
+}
+
+void Connection::GetRequest(FCommand_Packet _packet)
+{
+    //std::lock_guard<std::mutex>lock(file_mutex);
+    std::string line;
+    std::ifstream myfile("Public Lounge.txt");
+    if (myfile.is_open())
+    {
+        while (getline(myfile, line))
+        {
+            std::cout << line << '\n';
+
+            int com = (int)ECommand::Post;
+            std::string comstring = std::to_string(com);
+            std::string packet = comstring + ";" + line;
+            PushMessage(packet);
+        }
+        myfile.close();
     }
 }
