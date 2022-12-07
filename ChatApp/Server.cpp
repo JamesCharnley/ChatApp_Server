@@ -8,6 +8,12 @@ Server::Server(USHORT _port)
     CreateSocket(_port);
     BindSocket();
 
+    std::string packet = "6;1;Public Lounge";
+
+    FCommand_Packet com_pack = PacketDecoder::Char_To_Command_Packet(packet.c_str(), packet.length());
+    FGet_Packet get_pack = PacketDecoder::Command_Packet_To_Get_Packet(com_pack);
+
+    std::cout << (int)get_pack.Command << " " << (int)get_pack.Sub_Command << " " << get_pack.Content << std::endl;
 
     // start a new thread for listening
     std::thread listenerThread(&Server::Listen, this);

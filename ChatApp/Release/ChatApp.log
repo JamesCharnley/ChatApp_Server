@@ -1,13 +1,9 @@
 ﻿  ChatApp.cpp
   Connection.cpp
-  PacketDecoder.cpp
-C:\Users\James\Documents\GitHub\ChatApp_Server\ChatApp\PacketDecoder.cpp(9,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\James\Documents\GitHub\ChatApp_Server\ChatApp\PacketDecoder.cpp(37,23): warning C4018: '<': signed/unsigned mismatch
-C:\Users\James\Documents\GitHub\ChatApp_Server\ChatApp\PacketDecoder.cpp(50,41): warning C4018: '<': signed/unsigned mismatch
   Server.cpp
   Generating code
-  1 of 648 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    0 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  54 of 654 functions ( 8.3%) were compiled, the rest were copied from previous compilation.
+    4 functions were new in current compilation
+    55 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   ChatApp.vcxproj -> C:\Users\James\Documents\GitHub\ChatApp_Server\Release\ChatApp.exe

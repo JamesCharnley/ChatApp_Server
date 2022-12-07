@@ -61,7 +61,7 @@ void Connection::MessageReceived(int _sender, std::string _message)
     case ECommand::Get:
         break;
     case ECommand::GetRoom:
-        GetRequest(command_packet);
+        GetRequest(PacketDecoder::Command_Packet_To_Get_Packet(command_packet));
     default:
         break;
     }
@@ -280,11 +280,36 @@ void Connection::ExecuteLogin(FCommand_Packet _command_packet)
     }
 }
 
-void Connection::GetRequest(FCommand_Packet _packet)
+void Connection::GetRequest(FGet_Packet _packet)
 {
-    //std::lock_guard<std::mutex>lock(file_mutex);
+    if (_packet.Sub_Command == ESub_Command::InValid)
+    {
+        return;
+    }
+
+    switch (_packet.Sub_Command)
+    {
+    case ESub_Command::InValid:
+        break;
+    case ESub_Command::Room:
+        GetRequest_Room(_packet);
+        break;
+    case ESub_Command::RoomList:
+        break;
+    case ESub_Command::Contacts:
+        break;
+    default:
+        break;
+    }
+    
+}
+
+void Connection::GetRequest_Room(FGet_Packet _packet)
+{
+    std::lock_guard<std::mutex>lock(GetRoom_Mutex);
     std::string line;
-    std::ifstream myfile("Public Lounge.txt");
+    std::string file_path = _packet.Content + ".txt";
+    std::ifstream myfile(file_path);
     if (myfile.is_open())
     {
         while (getline(myfile, line))
@@ -297,5 +322,9 @@ void Connection::GetRequest(FCommand_Packet _packet)
             PushMessage(packet);
         }
         myfile.close();
+    }
+    else
+    {
+        std::cout << "Execute Command: " << "Get;Room;" << _packet.Content << " ERROR " << "file: " << _packet.Content << ".txt " << "failed to open." << std::endl;
     }
 }

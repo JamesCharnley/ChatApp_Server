@@ -69,6 +69,8 @@ protected:
 	std::mutex Queue_Mutex;
 	std::condition_variable Queue_cv;
 
+	std::mutex GetRoom_Mutex;
+
 	int ClientSocket = 0;
 
 	bool ClosingConnection = false;
@@ -81,7 +83,9 @@ protected:
 
 	void ExecuteLogin(FCommand_Packet _command_packet);
 
-	void GetRequest(FCommand_Packet _packet);
+	void GetRequest(FGet_Packet _packet);
+
+	void GetRequest_Room(FGet_Packet _packet);
 
 };
 
