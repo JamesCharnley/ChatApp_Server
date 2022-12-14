@@ -46,8 +46,11 @@ bool Connection::IsConnectionClosed()
 
 void Connection::MessageReceived(int _sender, std::string _message)
 {
+    std::cout << "MESSAGE RECIEVED" << std::endl;
     // c_str() DOES return a cstring with null terminator
     FCommand_Packet command_packet = PacketDecoder::Char_To_Command_Packet(_message.c_str(), _message.length());
+
+    std::cout << "AFTER" << std::endl;
 
     switch (command_packet.Command)
     {
@@ -55,13 +58,16 @@ void Connection::MessageReceived(int _sender, std::string _message)
         ExecuteLogin(command_packet);
         break;
     case ECommand::Signup:
+        ExecuteSignup(command_packet);
         break;
     case ECommand::Post:
         break;
     case ECommand::Get:
+        GetRequest(PacketDecoder::Command_Packet_To_Get_Packet(command_packet));
         break;
     case ECommand::GetRoom:
         GetRequest(PacketDecoder::Command_Packet_To_Get_Packet(command_packet));
+        break;
     default:
         break;
     }
@@ -280,8 +286,22 @@ void Connection::ExecuteLogin(FCommand_Packet _command_packet)
     }
 }
 
+void Connection::ExecuteSignup(FCommand_Packet _command_packet)
+{
+    std::cout << "ExecuteSignup: com_packet - " << _command_packet.Content << std::endl;
+    FLogin_Packet login_packet = PacketDecoder::Command_Packet_To_Login_Packet(_command_packet);
+    if (ServerClass->Signup(login_packet))
+    {
+        isAuthenticated = true;
+        int com_int = (int)ECommand::Authorized;
+        std::string com_str = std::to_string(com_int) + ";" + login_packet.Username;
+        PushMessage(com_str);
+    }
+}
+
 void Connection::GetRequest(FGet_Packet _packet)
 {
+    std::cout << "GET REQUEST" << std::endl;
     if (_packet.Sub_Command == ESub_Command::InValid)
     {
         return;

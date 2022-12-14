@@ -28,6 +28,8 @@ public:
 
 	bool Login(FLogin_Packet _login_packet);
 
+	bool Signup(FLogin_Packet _login_packet);
+
 protected:
 
 	std::vector<UserPass> UserDB = std::vector<UserPass>();

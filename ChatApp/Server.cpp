@@ -15,6 +15,8 @@ Server::Server(USHORT _port)
 
     std::cout << (int)get_pack.Command << " " << (int)get_pack.Sub_Command << " " << get_pack.Content << std::endl;
 
+    
+
     // start a new thread for listening
     std::thread listenerThread(&Server::Listen, this);
     listenerThread.detach();
@@ -62,6 +64,43 @@ bool Server::Login(FLogin_Packet _login_packet)
             }
         }
         myfile.close();
+    }
+    return false;
+}
+
+bool Server::Signup(FLogin_Packet _login_packet)
+{
+    std::lock_guard<std::mutex>lock(file_mutex);
+    std::string line;
+    std::ifstream myfile("users.txt");
+    if (myfile.is_open())
+    {
+        while (getline(myfile, line))
+        {
+            std::cout << line << '\n';
+
+            FCommand_Packet cp = { _login_packet.Command, line.c_str() };
+            FLogin_Packet entry = PacketDecoder::Command_Packet_To_Login_Packet(cp);
+            if (_login_packet.Username == entry.Username)
+            {
+                std::cout << "Sign up failed: Username already exists" << std::endl;
+                myfile.close();
+                return false;
+            }
+            
+        }
+        
+        myfile.close();
+    }
+
+    std::ofstream infile;
+    infile.open("users.txt", std::ios::app);
+    if (infile.is_open())
+    {
+        std::string newEntry = _login_packet.Username + ";" + _login_packet.Password + "\n";
+        infile << newEntry;
+        infile.close();
+        return true;
     }
     return false;
 }

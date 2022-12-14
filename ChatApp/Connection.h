@@ -82,6 +82,7 @@ protected:
 	bool isAuthenticated = false;
 
 	void ExecuteLogin(FCommand_Packet _command_packet);
+	void ExecuteSignup(FCommand_Packet _command_packet);
 
 	void GetRequest(FGet_Packet _packet);
 

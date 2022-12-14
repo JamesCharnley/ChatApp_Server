@@ -96,6 +96,10 @@ std::string PacketDecoder::String_Packet_To_String(FString_Packet _string_packet
 
 FGet_Packet PacketDecoder::Command_Packet_To_Get_Packet(FCommand_Packet _com_packet)
 {
+    std::cout << "Command_Packet_To_Get_Packet" << std::endl;
+    //std::cout << (int)_com_packet.Command << ";" << _com_packet.Content << std::endl;
+    //FGet_Packet ppacket = { _com_packet.Command, ESub_Command::InValid, "" };
+    //return ppacket;
     int sub_com_length = 0;
     for (int i = 0; i < _com_packet.Content.length(); i++)
     {
@@ -108,6 +112,7 @@ FGet_Packet PacketDecoder::Command_Packet_To_Get_Packet(FCommand_Packet _com_pac
     if (sub_com_length == 0)
     {
         FGet_Packet packet = { _com_packet.Command, ESub_Command::InValid, "" };
+        std::cout << "return invalid" << std::endl;
         return packet;
     }
 
@@ -126,6 +131,7 @@ FGet_Packet PacketDecoder::Command_Packet_To_Get_Packet(FCommand_Packet _com_pac
 
     FGet_Packet packet = { _com_packet.Command, sub_com, content_string };
 
+    std::cout << "Return packet" << std::endl;
     return packet;
 }
 
