@@ -8,7 +8,6 @@
 #include <mutex>
 #include <queue>
 #include <condition_variable>
-#include "Server.h"
 #include <string>
 #include <iostream>
 #include "PacketDecoder.h"
@@ -39,6 +38,10 @@ public:
 
 	bool IsConnectionClosed();
 
+	std::string GetUsername() { return username; };
+
+	void PushMessage(std::string _message);
+
 protected:
 
 	void MessageReceived(int _sender, std::string _message);
@@ -48,7 +51,6 @@ protected:
 	void HandleConnection_send(int _socket);
 	void HandleConnection_recv(int _socket);
 
-	void PushMessage(std::string _message);
 
 	std::string CapitalizeString(std::string _string);
 
@@ -81,12 +83,18 @@ protected:
 
 	bool isAuthenticated = false;
 
+	std::string username;
+
 	void ExecuteLogin(FCommand_Packet _command_packet);
 	void ExecuteSignup(FCommand_Packet _command_packet);
 
-	void GetRequest(FGet_Packet _packet);
+	void GetRequest(FGet_Post_Packet _packet);
 
-	void GetRequest_Room(FGet_Packet _packet);
+	void GetRequest_Room(FGet_Post_Packet _packet);
+
+	void PostRequest(FGet_Post_Packet _packet);
+
+	void PostRequest_Message(FPost_Message_Packet _packet);
 
 };
 

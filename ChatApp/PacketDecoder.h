@@ -10,8 +10,7 @@ enum class ECommand
 	Signup,
 	Post,
 	Get,
-	Authorized,
-	GetRoom
+	Authorized
 };
 
 enum class ESub_Command
@@ -19,7 +18,8 @@ enum class ESub_Command
 	InValid,
 	Room,
 	RoomList,
-	Contacts
+	Contacts,
+	Message
 };
 
 struct FCommand_Packet
@@ -47,12 +47,23 @@ public:
 	std::string _string;
 };
 
-struct FGet_Packet
+struct FGet_Post_Packet
 {
 public:
 
 	ECommand Command;
 	ESub_Command Sub_Command;
+	std::string Content;
+
+};
+
+struct FPost_Message_Packet
+{
+public:
+
+	ECommand Command;
+	ESub_Command Sub_Command;
+	std::string Room_Name;
 	std::string Content;
 
 };
@@ -67,8 +78,9 @@ public:
 	static std::string Login_Packet_To_String(FLogin_Packet _login_packet);
 	static FString_Packet Command_Packet_To_String_Packet(FCommand_Packet _com_packet);
 	static std::string String_Packet_To_String(FString_Packet _string_packet);
-	static FGet_Packet Command_Packet_To_Get_Packet(FCommand_Packet _com_packet);
-	static std::string Get_Packet_To_String(FGet_Packet _get_packet);
+	static FGet_Post_Packet Command_Packet_To_Get_Post_Packet(FCommand_Packet _com_packet);
+	static std::string Get_Packet_To_String(FGet_Post_Packet _get_packet);
+	static FPost_Message_Packet Get_Post_Packet_To_Post_Message_Packet(FGet_Post_Packet _get_post_packet);
 };
 
 

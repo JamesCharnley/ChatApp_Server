@@ -94,7 +94,7 @@ std::string PacketDecoder::String_Packet_To_String(FString_Packet _string_packet
     
 }
 
-FGet_Packet PacketDecoder::Command_Packet_To_Get_Packet(FCommand_Packet _com_packet)
+FGet_Post_Packet PacketDecoder::Command_Packet_To_Get_Post_Packet(FCommand_Packet _com_packet)
 {
     std::cout << "Command_Packet_To_Get_Packet" << std::endl;
     //std::cout << (int)_com_packet.Command << ";" << _com_packet.Content << std::endl;
@@ -111,7 +111,7 @@ FGet_Packet PacketDecoder::Command_Packet_To_Get_Packet(FCommand_Packet _com_pac
     }
     if (sub_com_length == 0)
     {
-        FGet_Packet packet = { _com_packet.Command, ESub_Command::InValid, "" };
+        FGet_Post_Packet packet = { _com_packet.Command, ESub_Command::InValid, "" };
         std::cout << "return invalid" << std::endl;
         return packet;
     }
@@ -124,21 +124,49 @@ FGet_Packet PacketDecoder::Command_Packet_To_Get_Packet(FCommand_Packet _com_pac
     int content_length = _com_packet.Content.length() - sub_com_length;
     if (content_length < 1)
     {
-        FGet_Packet packet = { _com_packet.Command, ESub_Command::InValid, ""};
+        FGet_Post_Packet packet = { _com_packet.Command, ESub_Command::InValid, ""};
     }
 
     std::string content_string = _com_packet.Content.substr(sub_com_length + 1, content_length);
 
-    FGet_Packet packet = { _com_packet.Command, sub_com, content_string };
+    FGet_Post_Packet packet = { _com_packet.Command, sub_com, content_string };
 
     std::cout << "Return packet" << std::endl;
     return packet;
 }
 
-std::string PacketDecoder::Get_Packet_To_String(FGet_Packet _get_packet)
+std::string PacketDecoder::Get_Packet_To_String(FGet_Post_Packet _get_packet)
 {
     std::string com_string = std::to_string((int)_get_packet.Command);
     std::string sub_com_string = std::to_string((int)_get_packet.Sub_Command);
     std::string packet_string = com_string + ";" + sub_com_string + ";" + _get_packet.Content;
     return packet_string;
+}
+
+FPost_Message_Packet PacketDecoder::Get_Post_Packet_To_Post_Message_Packet(FGet_Post_Packet _get_post_packet)
+{
+
+    int room_name_length = 0;
+    bool inValid = true;
+    for (int i = 0; i < _get_post_packet.Content.length(); i++)
+    {
+        if (_get_post_packet.Content[i] == ';')
+        {
+            inValid = false;
+            break;
+        }
+        room_name_length++;
+    }
+    if (inValid)
+    {
+        FPost_Message_Packet inv_pack = { ECommand::InValid, ESub_Command::InValid, "", "" };
+        return inv_pack;
+    }
+
+    std::string room_name = _get_post_packet.Content.substr(0, room_name_length);
+    std::string content = _get_post_packet.Content.substr(room_name_length + 1, _get_post_packet.Content.length() - room_name_length + 1);
+
+    FPost_Message_Packet packet = { _get_post_packet.Command, _get_post_packet.Sub_Command, room_name, content };
+
+    return packet;
 }

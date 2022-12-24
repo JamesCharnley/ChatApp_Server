@@ -8,12 +8,13 @@ Server::Server(USHORT _port)
     CreateSocket(_port);
     BindSocket();
 
-    std::string packet = "6;1;Public Lounge";
+    std::string packet = "3;1;Public Lounge;hello";
 
     FCommand_Packet com_pack = PacketDecoder::Char_To_Command_Packet(packet.c_str(), packet.length());
-    FGet_Packet get_pack = PacketDecoder::Command_Packet_To_Get_Packet(com_pack);
+    FGet_Post_Packet get_pack = PacketDecoder::Command_Packet_To_Get_Post_Packet(com_pack);
+    FPost_Message_Packet postpack = PacketDecoder::Get_Post_Packet_To_Post_Message_Packet(get_pack);
 
-    std::cout << (int)get_pack.Command << " " << (int)get_pack.Sub_Command << " " << get_pack.Content << std::endl;
+    std::cout << (int)postpack.Command << " " << (int)postpack.Sub_Command << " " << postpack.Room_Name << " " << postpack.Content << std::endl;
 
     
 
@@ -102,6 +103,41 @@ bool Server::Signup(FLogin_Packet _login_packet)
         infile.close();
         return true;
     }
+    return false;
+}
+
+bool Server::PostToRoom(FPost_Message_Packet _packet)
+{
+    std::cout << "PostToRoom" << std::endl;
+    std::lock_guard<std::mutex>lock(room_file_mutex);
+
+    std::ofstream infile;
+    std::string room_file = _packet.Room_Name + ".txt";
+    std::cout << room_file << std::endl;
+    infile.open(room_file, std::ios::app);
+    if (infile.is_open())
+    {
+        std::cout << "File is open" << std::endl;
+        std::string newEntry = _packet.Content + "\n";
+        infile << newEntry;
+        infile.close();
+
+        std::vector<Connection*>::iterator iter;
+        for (int i = 0; i < Connections.size(); i++)
+        {
+            iter = Connections.begin() + i;
+            Connection* con = *iter;
+            if (con != nullptr)
+            {
+                int com = (int)ECommand::Post;
+                std::string comstring = std::to_string(com);
+                std::string packet = comstring + ";" + _packet.Content;
+                con->PushMessage(packet);
+            }
+        }
+        return true;
+    }
+
     return false;
 }
 

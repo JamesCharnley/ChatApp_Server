@@ -30,6 +30,8 @@ public:
 
 	bool Signup(FLogin_Packet _login_packet);
 
+	bool PostToRoom(FPost_Message_Packet _packet);
+
 protected:
 
 	std::vector<UserPass> UserDB = std::vector<UserPass>();
@@ -45,6 +47,7 @@ protected:
 	std::condition_variable Queue_cv;
 
 	std::mutex file_mutex;
+	std::mutex room_file_mutex;
 
 	bool ServerShuttingDown = false;
 };

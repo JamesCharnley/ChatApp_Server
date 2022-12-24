@@ -61,12 +61,10 @@ void Connection::MessageReceived(int _sender, std::string _message)
         ExecuteSignup(command_packet);
         break;
     case ECommand::Post:
+        PostRequest(PacketDecoder::Command_Packet_To_Get_Post_Packet(command_packet));
         break;
     case ECommand::Get:
-        GetRequest(PacketDecoder::Command_Packet_To_Get_Packet(command_packet));
-        break;
-    case ECommand::GetRoom:
-        GetRequest(PacketDecoder::Command_Packet_To_Get_Packet(command_packet));
+        GetRequest(PacketDecoder::Command_Packet_To_Get_Post_Packet(command_packet));
         break;
     default:
         break;
@@ -279,6 +277,7 @@ void Connection::ExecuteLogin(FCommand_Packet _command_packet)
     FLogin_Packet login_packet = PacketDecoder::Command_Packet_To_Login_Packet(_command_packet);
     if (ServerClass->Login(login_packet))
     {
+        username = login_packet.Username;
         isAuthenticated = true;
         int com_int = (int)ECommand::Authorized;
         std::string com_str = std::to_string(com_int) + ";" + login_packet.Username;
@@ -299,7 +298,7 @@ void Connection::ExecuteSignup(FCommand_Packet _command_packet)
     }
 }
 
-void Connection::GetRequest(FGet_Packet _packet)
+void Connection::GetRequest(FGet_Post_Packet _packet)
 {
     std::cout << "GET REQUEST" << std::endl;
     if (_packet.Sub_Command == ESub_Command::InValid)
@@ -324,7 +323,7 @@ void Connection::GetRequest(FGet_Packet _packet)
     
 }
 
-void Connection::GetRequest_Room(FGet_Packet _packet)
+void Connection::GetRequest_Room(FGet_Post_Packet _packet)
 {
     std::lock_guard<std::mutex>lock(GetRoom_Mutex);
     std::string line;
@@ -347,4 +346,43 @@ void Connection::GetRequest_Room(FGet_Packet _packet)
     {
         std::cout << "Execute Command: " << "Get;Room;" << _packet.Content << " ERROR " << "file: " << _packet.Content << ".txt " << "failed to open." << std::endl;
     }
+}
+
+void Connection::PostRequest(FGet_Post_Packet _packet)
+{
+    std::cout << "POST REQUEST" << std::endl;
+    if (_packet.Sub_Command == ESub_Command::InValid)
+    {
+        std::cout << "sub com invalid" << std::endl;
+        return;
+    }
+
+    switch (_packet.Sub_Command)
+    {
+    case ESub_Command::InValid:
+        break;
+    case ESub_Command::Room:
+        break;
+    case ESub_Command::RoomList:
+        break;
+    case ESub_Command::Contacts:
+        break;
+    case ESub_Command::Message:
+        PostRequest_Message(PacketDecoder::Get_Post_Packet_To_Post_Message_Packet(_packet));
+        break;
+    default:
+        break;
+    }
+}
+
+
+void Connection::PostRequest_Message(FPost_Message_Packet _packet)
+{
+    std::cout << "PostRequest_Message" << std::endl;
+    if (isAuthenticated)
+    {
+        std::cout << "User is auth" << std::endl;
+        ServerClass->PostToRoom(_packet);
+    }
+    
 }
