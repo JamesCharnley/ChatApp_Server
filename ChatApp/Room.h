@@ -13,25 +13,19 @@ public:
 
 	Room(int _id, class Server* _server_class);
 
-	std::string GetName();
-	int Get_ID() { return id; };
+	std::string get_room_name();
+	int get_room_id() { return id; };
 
-	void AddActiveUser(class User _user);
+	void add_active_user(class User _user);
 	void remove_active_user(std::string _username);
-//
-//	void RemoveActiveUser(Connection& _userConnection);
-//
-//	void NewMessage(std::string _message);
 
-	void PrintTest();
+	bool is_initialized = false;
 
-	bool isInitialized = false;
-
-	void Add_New_Message(std::string _message);
+	void add_new_message(std::string _message);
 
 private:
 
-	std::vector<User> activeUsers = std::vector<User>();
+	std::vector<User> active_users = std::vector<User>();
 
 	std::string name = "";
 
@@ -41,9 +35,9 @@ private:
 
 	std::vector<std::string> messages = std::vector<std::string>();
 
-	void SendMessageToAllUsers(std::string _message);
-	void SendMessageToUser(User _user, std::string _message);
-	void SendAllMessagesToUser(User _user);
+	void send_message_to_all_users(std::string _message);
+	void send_message_to_user(User _user, std::string _message);
+	void send_all_messages_to_user(User _user);
 
 	std::mutex active_users_mutex;
 

@@ -29,7 +29,7 @@ Room::Room(int _id, Server* _server_class)
 			if (getline(room_name_file, line))
 			{
 				name = line;
-				std::cout << "name: " << GetName() << std::endl;
+				std::cout << "name: " << get_room_name() << std::endl;
 			}
 			room_name_file.close();
 			
@@ -53,21 +53,21 @@ Room::Room(int _id, Server* _server_class)
 	}
 
 	
-	isInitialized = true;
+	is_initialized = true;
 }
 
-std::string Room::GetName()
+std::string Room::get_room_name()
 {
 	return name;
 }
 
-void Room::AddActiveUser(User _user)
+void Room::add_active_user(User _user)
 {
 	std::lock_guard<std::mutex>lock(active_users_mutex);
 	std::vector<User>::iterator it;
-	for (int i = 0; i < activeUsers.size(); i++)
+	for (int i = 0; i < active_users.size(); i++)
 	{
-		it = activeUsers.begin() + i;
+		it = active_users.begin() + i;
 		User con = *it;
 
 		if (_user.GetUsername() == con.GetUsername())
@@ -76,40 +76,37 @@ void Room::AddActiveUser(User _user)
 		}
 	}
 
-	activeUsers.push_back(_user);
+	active_users.push_back(_user);
 
-	SendAllMessagesToUser(_user);
+	send_all_messages_to_user(_user);
 
 }
 void Room::remove_active_user(std::string _username)
 {
 	std::lock_guard<std::mutex>lock(active_users_mutex);
-	for (std::vector<User>::iterator it = activeUsers.begin(); it < activeUsers.end(); it++)
+	for (std::vector<User>::iterator it = active_users.begin(); it < active_users.end(); it++)
 	{
 		User user = *it;
 		if (user.GetUsername() == _username)
 		{
-			activeUsers.erase(it);
+			active_users.erase(it);
 			std::cout << "Terminated active user: " << _username << std::endl;
 			break;
 		}
 	}
 
-	if (activeUsers.size() == 0)
+	if (active_users.size() == 0)
 	{
 		// de actiavte room
 		server_class->deactivate_Room_By_id(id);
 	}
 }
-void Room::PrintTest()
-{
-	std::cout << "Room test " << name << std::endl;
-}
-void Room::Add_New_Message(std::string _message)
+
+void Room::add_new_message(std::string _message)
 {
 	messages.push_back(_message);
 
-	SendMessageToAllUsers(_message);
+	send_message_to_all_users(_message);
 }
 //
 //void Room::RemoveActiveUser(Connection& _userConnection)
@@ -132,9 +129,9 @@ void Room::Add_New_Message(std::string _message)
 //{
 //}
 //
-void Room::SendMessageToAllUsers(std::string _message)
+void Room::send_message_to_all_users(std::string _message)
 {
-	for (std::vector<User>::iterator it = activeUsers.begin(); it < activeUsers.end(); it++)
+	for (std::vector<User>::iterator it = active_users.begin(); it < active_users.end(); it++)
 	{
 		User user = *it;
 
@@ -146,11 +143,11 @@ void Room::SendMessageToAllUsers(std::string _message)
 	}
 }
 
-void Room::SendMessageToUser(User _user, std::string _message)
+void Room::send_message_to_user(User _user, std::string _message)
 {
 }
 
-void Room::SendAllMessagesToUser(User _user)
+void Room::send_all_messages_to_user(User _user)
 {
 	Connection* con = _user.GetConnection();
 	if (con)

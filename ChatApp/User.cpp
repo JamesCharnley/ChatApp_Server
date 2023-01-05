@@ -34,7 +34,7 @@ User::User(std::string _username, Connection* _connection, Server* _server)
                     Room* room_ptr = server->Get_Room_By_ID(room_id);
                     if (room_ptr != nullptr)
                     {
-                        room_ptr->AddActiveUser(*this);
+                        room_ptr->add_active_user(*this);
                         rooms.push_back(room_ptr);
                     }
                     else
@@ -69,7 +69,7 @@ void User::update_client()
         std::cout << "room iteration" << std::endl;
         Room* room = *it;
 
-        std::string name = room->GetName();
+        std::string name = room->get_room_name();
         //bool test = true;
         //while (test)
         //{
@@ -83,13 +83,13 @@ void User::update_client()
         //        test = false;
         //    }
         //}
-        if (room->isInitialized) { std::cout << "Is Initialised" << std::endl; };
-        std::cout << "Room " << room->GetName() << std::endl;
+        if (room->is_initialized) { std::cout << "Is Initialised" << std::endl; };
+        std::cout << "Room " << room->get_room_name() << std::endl;
         std::cout << "Room " << name << std::endl;
-        room->PrintTest();
-        std::cout << "ID " << room->Get_ID() << std::endl;
 
-        FPost_Room_Packet post_room_packet = { ECommand::Post, ESub_Command::Room, room->Get_ID(), room->GetName() };
+        std::cout << "ID " << room->get_room_id() << std::endl;
+
+        FPost_Room_Packet post_room_packet = { ECommand::Post, ESub_Command::Room, room->get_room_id(), room->get_room_name() };
 
         std::string post_room_packet_string = PacketDecoder::Post_Room_Packet_To_String(post_room_packet);
 

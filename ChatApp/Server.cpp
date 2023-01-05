@@ -146,7 +146,7 @@ bool Server::PostToRoom(FPost_Message_Packet _packet)
            Room* room = Get_Room_By_ID(_packet.Room_ID);
            if (room != nullptr)
            {
-               room->Add_New_Message(_packet.Content);
+               room->add_new_message(_packet.Content);
            }
            return true;
        }
@@ -167,7 +167,7 @@ void Server::deactivate_Room_By_id(int _room_id)
     for (std::vector<Room*>::iterator it = active_rooms.begin(); it < active_rooms.end(); it++)
     {
         Room* room = *it;
-        if (room->Get_ID() == _room_id)
+        if (room->get_room_id() == _room_id)
         {
             delete room;
             active_rooms.erase(it);
@@ -184,7 +184,7 @@ Room* Server::Get_Room_By_ID(int _id)
     {
         it = active_rooms.begin() + i;
         Room* room = *it;
-        if (room->Get_ID() == _id)
+        if (room->get_room_id() == _id)
         {
             return room;
         }
@@ -389,7 +389,7 @@ bool Server::is_room_active(int _room_id)
     {
         it = active_rooms.begin() + i;
         Room* room = *it;
-        if (room->Get_ID() == _room_id)
+        if (room->get_room_id() == _room_id)
         {
             return true;
         }
