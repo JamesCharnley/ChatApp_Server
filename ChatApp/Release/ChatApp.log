@@ -1,7 +1,14 @@
-﻿  Connection.cpp
+﻿  ChatApp.cpp
+  Connection.cpp
+  Room.cpp
+C:\Users\James\Documents\GitHub\ChatApp_Server\ChatApp\Room.cpp(68,20): warning C4018: '<': signed/unsigned mismatch
+  Server.cpp
+C:\Users\James\Documents\GitHub\ChatApp_Server\ChatApp\Server.cpp(183,23): warning C4018: '<': signed/unsigned mismatch
+C:\Users\James\Documents\GitHub\ChatApp_Server\ChatApp\Server.cpp(388,23): warning C4018: '<': signed/unsigned mismatch
+  User.cpp
   Generating code
-  3 of 679 functions ( 0.4%) were compiled, the rest were copied from previous compilation.
+  53 of 1010 functions ( 5.2%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    20 functions had inline decision re-evaluated but remain unchanged
+    85 functions had inline decision re-evaluated but remain unchanged
   Finished generating code
   ChatApp.vcxproj -> C:\Users\James\Documents\GitHub\ChatApp_Server\Release\ChatApp.exe

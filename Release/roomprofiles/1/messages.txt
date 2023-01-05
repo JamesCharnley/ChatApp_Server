@@ -1,0 +1,4 @@
+Welcome to the public room.
+This is a test message.
+This is another test message.
+Hello, my name is james.

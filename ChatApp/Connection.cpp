@@ -28,6 +28,7 @@ Connection::~Connection()
 
 void Connection::CloseConnection()
 {
+    if (isAuthenticated) { ServerClass->terminate_user(username); }
     ClosingConnection = true;
 }
 
@@ -72,83 +73,6 @@ void Connection::MessageReceived(int _sender, std::string _message)
     
 }
 
-void Connection::ExecuteCommand(int _client, ECOMMAND _command, std::string _message)
-{
-    
-    switch (_command)
-    {
-    case ECOMMAND::Capitalize:
-    {
-        if (_message == ".")
-        {
-            std::string msg = "";
-
-            for (auto _char : ClientInputBuffer)
-            {
-                if (_char != '/')
-                {
-                    msg += _char;
-                }
-                else
-                {
-                    PushMessage(msg);
-                    msg = "";
-                }
-            }
-            ClientInputBuffer = "";
-            CurrentCommand = ECOMMAND::None;
-        }
-        else
-        {
-            _message = CapitalizeString(_message);
-            _message += "/";
-
-            ClientInputBuffer += _message;
-
-        }
-
-    }
-    break;
-    case ECOMMAND::Get:
-    {
-        if (ClientInputStorage.size() > 0)
-        {
-            PushMessage(ClientInputStorage[ClientInputStorage.size() - 1]);
-        }
-        else
-        {
-            PushMessage("The storage is empty. Use the 'PUT' command to add to storage");
-        }
-    }
-        break;
-    case ECOMMAND::Put:
-    {
-        if (_message == ".")
-        {
-            CurrentCommand = ECOMMAND::None;
-        }
-        else
-        {
-            ClientInputStorage.push_back(_message);
-        }
-    }
-        break;
-    case ECOMMAND::Quit:
-    {
-        PushMessage("200 OK");
-        ServerClass->ShutdownServer();
-    }
-    case ECOMMAND::Login:
-    {
-        PushMessage("200 OK");
-        ServerClass->ShutdownServer();
-    }
-        break;
-    default:
-        break;
-    }
-}
-
 void Connection::HandleConnection_send(int _socket)
 {
     
@@ -181,7 +105,10 @@ void Connection::HandleConnection_send(int _socket)
         if (status == -1)
         {
             std::cout << "ERROR in send(). Error code: " << WSAGetLastError() << std::endl;
-            ClosingConnection = true;
+            if (!ClosingConnection)
+            {
+                CloseConnection();
+            }
             isActive = false;
             continue;
         }
@@ -211,7 +138,10 @@ void Connection::HandleConnection_recv(int _socket)
         if (status == -1)
         {
             std::cout << "ERROR in recv(). Error code: " << WSAGetLastError() << std::endl;
-            ClosingConnection = true;
+            if (!ClosingConnection)
+            {
+                CloseConnection();
+            }
             isActive = false;
             continue;
         }
@@ -251,34 +181,24 @@ void Connection::PushMessage(std::string _message)
     Queue_cv.notify_one();
 }
 
-std::string Connection::CapitalizeString(std::string _string)
-{
-    int len = _string.length();
-    for (int i = 0; i < len; i++)
-    {
-        _string[i] = std::toupper(_string[i]);
-    }
-    return _string;
-}
-
 bool Connection::UnlockMutex()
 {
-    bool unlock = false;
     if (ClosingConnection == true || !MessageQueue.empty())
     {
-        unlock = true;
+        return true;
     }
-    return unlock;
+    return false;
 }
 
 void Connection::ExecuteLogin(FCommand_Packet _command_packet)
 {
     std::cout << "ExecuteLogin: com_packet - " << _command_packet.Content << std::endl;
     FLogin_Packet login_packet = PacketDecoder::Command_Packet_To_Login_Packet(_command_packet);
-    if (ServerClass->Login(login_packet))
+    if (ServerClass->Login(login_packet, this))
     {
         username = login_packet.Username;
         isAuthenticated = true;
+
         int com_int = (int)ECommand::Authorized;
         std::string com_str = std::to_string(com_int) + ";" + login_packet.Username;
         PushMessage(com_str);
@@ -289,7 +209,7 @@ void Connection::ExecuteSignup(FCommand_Packet _command_packet)
 {
     std::cout << "ExecuteSignup: com_packet - " << _command_packet.Content << std::endl;
     FLogin_Packet login_packet = PacketDecoder::Command_Packet_To_Login_Packet(_command_packet);
-    if (ServerClass->Signup(login_packet))
+    if (ServerClass->Signup(login_packet, this))
     {
         isAuthenticated = true;
         int com_int = (int)ECommand::Authorized;

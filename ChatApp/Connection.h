@@ -14,18 +14,6 @@
 
 #define BUFFER_SIZE 100
 
-
-enum class ECOMMAND
-{
-	None,
-	Capitalize,
-	Get,
-	Put,
-	Quit,
-	Login,
-	Signup
-};
-
 class Connection
 {
 
@@ -39,6 +27,7 @@ public:
 	bool IsConnectionClosed();
 
 	std::string GetUsername() { return username; };
+	void set_username(std::string _username) { username = _username; };
 
 	void PushMessage(std::string _message);
 
@@ -46,25 +35,12 @@ protected:
 
 	void MessageReceived(int _sender, std::string _message);
 
-	void ExecuteCommand(int _client, ECOMMAND _command, std::string _message);
-
 	void HandleConnection_send(int _socket);
 	void HandleConnection_recv(int _socket);
-
-
-	std::string CapitalizeString(std::string _string);
-
-	std::string ClientInputBuffer = "";
-
-	std::vector<std::string> ClientInputStorage = std::vector<std::string>();
-
-	std::map<int, std::string> CapitalizeContainer = std::map<int, std::string>();
 
 	std::queue<std::string> MessageQueue;
 
 	bool UnlockMutex();
-
-	ECOMMAND CurrentCommand = ECOMMAND::None;
 
 	class Server* ServerClass = nullptr;
 
