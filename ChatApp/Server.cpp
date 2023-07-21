@@ -84,7 +84,6 @@ bool Server::Login(FLogin_Packet _login_packet, Connection* _connection)
     {
         while (getline(myfile, line))
         {
-            std::cout << line << '\n';
             
             FCommand_Packet cp = { _login_packet.Command, line.c_str() };
             FLogin_Packet entry = PacketDecoder::Command_Packet_To_Login_Packet(cp);
@@ -97,18 +96,13 @@ bool Server::Login(FLogin_Packet _login_packet, Connection* _connection)
                     Initialize_User(_connection, _login_packet);
                     return true;
                 }
-                else
-                {
-                    std::cout << "Failed Login: " << "Password does not match " << "recieved: " << _login_packet.Password << " saved: " << entry.Password << std::endl;
-                }
+                
             }
-            else
-            {
-                std::cout << "Failed Login: " << "Username does not match " << "recieved: " << _login_packet.Username << " saved: " << entry.Username << std::endl;
-            }
+            
         }
         myfile.close();
     }
+    std::cout << "Failed Login: " << PacketDecoder::Login_Packet_To_String(_login_packet) << std::endl;
     return false;
 }
 
@@ -126,7 +120,7 @@ bool Server::Signup(FLogin_Packet _login_packet, Connection* _connection)
 
 bool Server::PostToRoom(FPost_Message_Packet _packet)
 {
-   std::cout << "PostToRoom" << std::endl;
+   std::cout << "PostToRoom - " << "Room: " << _packet.Room_ID << " Message: " << _packet.Content << std::endl;
    std::lock_guard<std::mutex>lock(room_file_mutex);
    
    std::string room_path = "roomprofiles/" + std::to_string(_packet.Room_ID);
@@ -321,7 +315,7 @@ bool Server::UsernameExists(std::string _username)
 
             if (_username == entry.Username)
             {
-                std::cout << "Sign up failed: Username already exists" << std::endl;
+                std::cout << "Sign up failed: Username already exists: " << _username << std::endl;
                 myfile.close();
                 return true;
             }

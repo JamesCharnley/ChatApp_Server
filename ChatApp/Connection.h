@@ -72,5 +72,8 @@ protected:
 
 	void PostRequest_Message(FPost_Message_Packet _packet);
 
+	std::vector<std::string> out_queue = std::vector<std::string>();
+	bool reciever_ready;
+
 };
 

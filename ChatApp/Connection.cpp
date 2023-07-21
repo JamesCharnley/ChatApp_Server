@@ -1,4 +1,5 @@
 #include "Server.h"
+#include <filesystem>
 #include "Connection.h"
 
 
@@ -7,6 +8,7 @@ Connection::Connection(Server* _server, int _clientSocket)
     ClientSocket = _clientSocket;
     ServerClass = _server;
 
+    reciever_ready = true;
     // create threads for recv and send
     std::thread recvThread(&Connection::HandleConnection_recv, this, ClientSocket);
     std::thread sendThread(&Connection::HandleConnection_send, this, ClientSocket);
@@ -47,11 +49,9 @@ bool Connection::IsConnectionClosed()
 
 void Connection::MessageReceived(int _sender, std::string _message)
 {
-    std::cout << "MESSAGE RECIEVED" << std::endl;
-    // c_str() DOES return a cstring with null terminator
+    std::cout << "MESSAGE RECIEVED: " << _message << std::endl;
+    
     FCommand_Packet command_packet = PacketDecoder::Char_To_Command_Packet(_message.c_str(), _message.length());
-
-    std::cout << "AFTER" << std::endl;
 
     switch (command_packet.Command)
     {
@@ -83,11 +83,16 @@ void Connection::HandleConnection_send(int _socket)
         // lock use of messagequeue while removing the next message
         std::unique_lock<std::mutex>lock(Queue_Mutex);
         Queue_cv.wait(lock, [this] { return UnlockMutex(); });
-        if (MessageQueue.size() == 0)
+        if (MessageQueue.size() == 0 || !reciever_ready)
         {
             continue;
         }
+        
         std::string message = MessageQueue.front();
+        if (message != "0")
+        {
+            reciever_ready = false;
+        }
         MessageQueue.pop();
         // unlock messagequeue
         lock.unlock();
@@ -101,7 +106,7 @@ void Connection::HandleConnection_send(int _socket)
         buffer[len] = '\0';
          // send message
         int status = send(_socket, buffer, strlen(buffer) + 1, 0);
-        std::cout << "Sent Message " << buffer << "END";
+        std::cout << "Sent Message: " << buffer << std::endl;
         if (status == -1)
         {
             std::cout << "ERROR in send(). Error code: " << WSAGetLastError() << std::endl;
@@ -133,7 +138,6 @@ void Connection::HandleConnection_recv(int _socket)
         std::cout << "Waiting for message...\n";
 
         int status = recv(_socket, buffer, BUFFER_SIZE, 0);
-        std::cout << "Status = " << status << "\n";
 
         if (status == -1)
         {
@@ -145,26 +149,41 @@ void Connection::HandleConnection_recv(int _socket)
             isActive = false;
             continue;
         }
-        std::cout << "recv: " << buffer << std::endl;
 
         buffer[status] = '\0';
-        for (int i = 0; i < status + 1; i++)
-        {
-            if (buffer[i] == '\0')
-            {
-                std::cout << "null c found" << std::endl;
-            }
-            std::cout << buffer[i];
-        }
-        std::cout << std::endl;
+        
+       
         std::string msg(buffer);
-        std::cout << "string length " << msg.length() << std::endl;
-        MessageReceived(_socket, msg);
+        std::cout << "recv: " << buffer << std::endl;
+        if (msg == "0")
+        {
+            std::cout << "reciver ready" << std::endl;
+            reciever_ready = true;
+        }
+        else
+        {
+            MessageReceived(_socket, msg);
+        }
+        
 
         if (ClosingConnection)
         {
             isActive = false;
         }
+
+        if (msg != "0")
+        {
+            std::string packet = "0";
+            size_t length = packet.length();
+            char* buffer = new char[length + (size_t)1];
+            for (int i = 0; i < (int)length; i++)
+            {
+                buffer[i] = packet[i];
+            }
+            buffer[length] = '\0';
+            int status = send(ClientSocket, buffer, (int)strlen(buffer), 0);
+        }
+        
     }
     RecvThread_Active = false;
 
@@ -220,7 +239,7 @@ void Connection::ExecuteSignup(FCommand_Packet _command_packet)
 
 void Connection::GetRequest(FGet_Post_Packet _packet)
 {
-    std::cout << "GET REQUEST" << std::endl;
+    std::cout << "GET REQUEST: " << PacketDecoder::Get_Post_Packet_To_String(_packet) << std::endl;
     if (_packet.Sub_Command == ESub_Command::InValid)
     {
         return;
@@ -246,21 +265,22 @@ void Connection::GetRequest(FGet_Post_Packet _packet)
 void Connection::GetRequest_Room(FGet_Post_Packet _packet)
 {
     std::lock_guard<std::mutex>lock(GetRoom_Mutex);
-    std::string line;
-    std::string file_path = _packet.Content + ".txt";
-    std::ifstream myfile(file_path);
-    if (myfile.is_open())
+    std::string file_path_room = "roomprofiles/" + _packet.Content;
+    if (std::filesystem::exists(file_path_room))
     {
-        while (getline(myfile, line))
+        std::string line;
+        std::string file_path_room_messages = file_path_room + "/messages.txt";
+        std::ifstream myfile(file_path_room_messages);
+        if (myfile.is_open())
         {
-            std::cout << line << '\n';
+            while (getline(myfile, line))
+            {
+                FPost_Message_Packet packet = { ECommand::Post, ESub_Command::Message, std::stoi(_packet.Content), line };
 
-            int com = (int)ECommand::Post;
-            std::string comstring = std::to_string(com);
-            std::string packet = comstring + ";" + line;
-            PushMessage(packet);
+                PushMessage(PacketDecoder::Post_Message_Packet_To_String(packet));
+            }
+            myfile.close();
         }
-        myfile.close();
     }
     else
     {
@@ -270,7 +290,7 @@ void Connection::GetRequest_Room(FGet_Post_Packet _packet)
 
 void Connection::PostRequest(FGet_Post_Packet _packet)
 {
-    std::cout << "POST REQUEST" << std::endl;
+    std::cout << "POST REQUEST: " << PacketDecoder::Get_Post_Packet_To_String(_packet) << std::endl;
     if (_packet.Sub_Command == ESub_Command::InValid)
     {
         std::cout << "sub com invalid" << std::endl;
@@ -298,10 +318,8 @@ void Connection::PostRequest(FGet_Post_Packet _packet)
 
 void Connection::PostRequest_Message(FPost_Message_Packet _packet)
 {
-    std::cout << "PostRequest_Message" << std::endl;
     if (isAuthenticated)
     {
-        std::cout << "User is auth" << std::endl;
         ServerClass->PostToRoom(_packet);
     }
     

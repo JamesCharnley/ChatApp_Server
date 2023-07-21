@@ -13,7 +13,7 @@ Room::Room()
 
 Room::Room(int _id, Server* _server_class)
 {
-	std::cout << "Room()" << std::endl;
+	std::cout << "Creating Room Class - ID: " << _id << std::endl;
 	id = _id;
 	server_class = _server_class;
 
@@ -29,7 +29,6 @@ Room::Room(int _id, Server* _server_class)
 			if (getline(room_name_file, line))
 			{
 				name = line;
-				std::cout << "name: " << get_room_name() << std::endl;
 			}
 			room_name_file.close();
 			
@@ -77,8 +76,6 @@ void Room::add_active_user(User _user)
 	}
 
 	active_users.push_back(_user);
-
-	send_all_messages_to_user(_user);
 
 }
 void Room::remove_active_user(std::string _username)

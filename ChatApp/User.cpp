@@ -7,6 +7,7 @@ User::User()
 
 User::User(std::string _username, Connection* _connection, Server* _server)
 {
+    
     rooms = std::vector<Room*>();
 
 	server = _server;
@@ -21,7 +22,6 @@ User::User(std::string _username, Connection* _connection, Server* _server)
         std::ifstream rooms_file(user_profile_path);
         if (rooms_file.is_open())
         {
-            std::cout << "user profile exists" << std::endl;
             while (getline(rooms_file, line))
             {
                 if (line.length() > 0)
@@ -70,24 +70,6 @@ void User::update_client()
         Room* room = *it;
 
         std::string name = room->get_room_name();
-        //bool test = true;
-        //while (test)
-        //{
-        //    
-        //    if (room->GetName() == "")
-        //    {
-        //        std::cout << "Room string empty" << std::endl;
-        //    }
-        //    else
-        //    {
-        //        test = false;
-        //    }
-        //}
-        if (room->is_initialized) { std::cout << "Is Initialised" << std::endl; };
-        std::cout << "Room " << room->get_room_name() << std::endl;
-        std::cout << "Room " << name << std::endl;
-
-        std::cout << "ID " << room->get_room_id() << std::endl;
 
         FPost_Room_Packet post_room_packet = { ECommand::Post, ESub_Command::Room, room->get_room_id(), room->get_room_name() };
 

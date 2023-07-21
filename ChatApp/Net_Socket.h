@@ -26,6 +26,7 @@ protected:
 	// address
 	sockaddr_in Address;
 
+	
 
 protected:
 
